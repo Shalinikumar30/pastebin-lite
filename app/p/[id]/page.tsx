@@ -1,8 +1,12 @@
-import { redis } from "@/lib/redis";
-
-export default async function Page({ params }: { params: { id: string } }) {
-  const paste = await redis.get<any>(`paste:${params.id}`);
-  if (!paste) return <h1>404</h1>;
-
-  return <pre>{paste.content}</pre>;
+export default function PastePage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Paste Page</h1>
+      <p>Paste ID: {params.id}</p>
+    </div>
+  );
 }

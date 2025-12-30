@@ -1,4 +1,4 @@
-# Pastebin-Lite
+# Pastebin-Lite 
 
 A minimal Pastebin-like application.
 
@@ -13,4 +13,4 @@ Uses Upstash Redis for persistence.
 
 ## Environment Variables
 
-See .env.example
+See .env.example 
