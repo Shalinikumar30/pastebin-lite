@@ -1,0 +1,34 @@
+import { redis } from "@/lib/redis";
+import { nowMs } from "@/lib/time";
+
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const key = `paste:${params.id}`;
+  const paste = await redis.get<any>(key);
+
+  if (!paste) return Response.json({ error: "Not found" }, { status: 404 });
+
+  const now = nowMs(req);
+
+  if (paste.ttl_seconds) {
+    const expiresAt = paste.createdAt + paste.ttl_seconds * 1000;
+    if (now >= expiresAt) {
+      await redis.del(key);
+      return Response.json({ error: "Expired" }, { status: 404 });
+    }
+  }
+
+  if (paste.max_views !== null && paste.views >= paste.max_views) {
+    return Response.json({ error: "View limit exceeded" }, { status: 404 });
+  }
+
+  paste.views += 1;
+  await redis.set(key, paste);
+
+  return Response.json({
+    content: paste.content,
+    remaining_views: paste.max_views === null ? null : Math.max(0, paste.max_views - paste.views),
+    expires_at: paste.ttl_seconds === null
+      ? null
+      : new Date(paste.createdAt + paste.ttl_seconds * 1000).toISOString()
+  });
+}
